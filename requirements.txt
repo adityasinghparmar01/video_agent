@@ -58,3 +58,6 @@ langchain-mistralai
 yt-dlp
 pydub
 openai-whisper
+
+langchain-huggingface
+sentence-transformers

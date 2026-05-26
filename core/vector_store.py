@@ -1,6 +1,6 @@
 import os
 from langchain_chroma import Chroma
-from langchian_community.embeddings import HuggingFaceEmbeddings    
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchian_text_splitters import RecursiveCharacterTextSplitter
 from langchian_core.documents import Document
 
