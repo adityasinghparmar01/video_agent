@@ -1,8 +1,8 @@
 import os
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchian_text_splitters import RecursiveCharacterTextSplitter
-from langchian_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
 
 CHROMA_DIR  = "vector_db"
 COLLECTION_NAME = "meeting_transcript"
