@@ -3,6 +3,10 @@ import os
 import requests
 from pydub import AudioSegment
 
+# Sarvam's sync STT-translate API rejects audio longer than 30s.
+# We slice each chunk into 25s pieces (with a 5s safety margin) before sending.
+SARVAM_PIECE_SECONDS = 25
+
 WHISPER_MODEL =  os.getenv("WHISPER_MODEL","small") # apn ne default value small di hai agar user ne .env file me koi value set nahi ki to. Whisper model ke different sizes hote hain jaise tiny, base, small, medium, large. Small model ek achha balance provide karta hai speed aur accuracy ke beech me, isliye maine isse default set kiya hai.
 
 # we have to create end points to use sarvam
@@ -44,7 +48,7 @@ def _send_to_sarvam(piece_path: str) -> str:
         )
 
     if not response.ok:
-        print(f"\n❌ Sarvam returned {response.status_code}")
+        print(f"\n Sarvam returned {response.status_code}")
         print(f"Response body: {response.text}\n")
         response.raise_for_status()
 
@@ -80,7 +84,15 @@ def transcribe_chunk_sarvam(chunk_path: str) -> str:
 
 
 # for videos we have more than one chunks to transcribe, so we will use this function to transcribe all the chunks and combine the results into one string. Is function me ham ek list of chunk paths pass karenge, aur ye function har chunk ko transcribe karega aur unke results ko ek single string me combine karke return karega. Is tarah se ham apne video ke poore audio ka transcription result ek hi string me le sakte hain, chahe usme kitne bhi chunks ho.
-
+def transcribe_chunk(chunk_path: str, language: str = "english") -> str:
+    """
+    Route one chunk to Whisper or Sarvam depending on language choice.
+    - english  → Whisper (local model)
+    - hinglish → Sarvam (translates to English while transcribing)
+    """
+    if language.lower() == "hinglish":
+        return transcribe_chunk_sarvam(chunk_path)
+    return transcribe_chunk_whisper(chunk_path)
 def transcribe_all(chunks: list, language: str = "english") -> str:
 
     full_transcript = "" 
