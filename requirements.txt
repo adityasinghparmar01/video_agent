@@ -61,3 +61,7 @@ openai-whisper
 
 langchain-huggingface
 sentence-transformers
+
+torch
+torchvision
+transformers
