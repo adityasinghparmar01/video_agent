@@ -10,17 +10,20 @@ from core.vector_store import build_vector_store, load_vector_store, get_retriev
 def get_llm():
     return ChatMistralAI(
         model="mistral-small-latest",
+        mistral_api_key=os.getenv("MISTRAL_API_KEY"),
         temperature=0.3,
-        mistral_api_key = os.getenv("MISTRAL_API_KEY")
     )
 
 def format_docs(docs):
     return "\n\n".join([doc.page_content for doc in docs])
 
 # build ragchain function se rag chain build hoti hai , pura database build hota hai aur retriever ready hota hai, ab hame ek function banana hai jo user ke question lega aur uske hisab se retriever se relevant chunks ko retrieve karega aur fir unhe prompt me dal ke llm ko answer generate karne ke liye bolega.
+
 def build_rag_chain(transcript:str):
+
     vector_store = build_vector_store(transcript)
-    retriever = get_retriever(vector_store , k=4)
+
+    retriever = get_retriever(vector_store, k = 4)
 
     llm = get_llm()
 
@@ -43,7 +46,7 @@ Context from meeting transcript:
     ]
     )
 
-    # full LCEL Rag Pipeline..  Build Rag chian
+    #full LCEL Rag pipeline 
 
     rag_chain = (
 
@@ -53,7 +56,7 @@ Context from meeting transcript:
          |prompt|llm|StrOutputParser()
     )
 
-    return rag_chain   
+    return rag_chain
 
 # hame bas abhi pipeline banai hai , but isme hamne abhi tak koi bhi question m context pass nahi kiya hai, to iske liye hame ek function banana padega jo user ke question lega aur uske hisab se retriever se relevant chunks ko retrieve karega aur fir unhe prompt me dal ke llm ko answer generate karne ke liye bolega.
 
@@ -61,7 +64,7 @@ Context from meeting transcript:
 
 def load_rag_chain():
     vector_store = load_vector_store()
-    retriever = get_retriever(vector_store , k=4)
+    retriver = get_retriever()
 
     llm = get_llm()
     prompt = ChatPromptTemplate.from_messages([
@@ -83,7 +86,7 @@ Context from meeting transcript:
 
     rag_chain = (
         {
-            "context":  retriever| RunnableLambda(format_docs),
+            "context":  retriver| RunnableLambda(format_docs),
             "question": RunnablePassthrough(),
         }
         | prompt
@@ -92,6 +95,7 @@ Context from meeting transcript:
     )
 
     return rag_chain
+
 
 def ask_question(rag_chain, question:str) -> str:
     print(f"Question : {question}")

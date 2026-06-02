@@ -7,7 +7,7 @@ from pydub import AudioSegment
 # We slice each chunk into 25s pieces (with a 5s safety margin) before sending.
 SARVAM_PIECE_SECONDS = 25
 
-WHISPER_MODEL =  os.getenv("WHISPER_MODEL","small") # apn ne default value small di hai agar user ne .env file me koi value set nahi ki to. Whisper model ke different sizes hote hain jaise tiny, base, small, medium, large. Small model ek achha balance provide karta hai speed aur accuracy ke beech me, isliye maine isse default set kiya hai.
+WHISPER_MODEL = os.getenv("WHISPER_MODEL", "small")
 
 # we have to create end points to use sarvam
 SARVAM_API_KEY = os.getenv("SARVAM_API_KEY") 
@@ -20,17 +20,23 @@ _model = None  # jab ham pehli baar function use karenge to vo hamare system me 
 
 # we want to load model once only
 def load_model():
-    global _model
-    if _model is None:
-        print(f"loading Model ...")
-        _model = whisper.load_model(WHISPER_MODEL)
-    return _model
+
+    global _model  
+
+    if _model is None: 
+        print(f"Loading Whisper model: {WHISPER_MODEL} ...")
+        _model = whisper.load_model(WHISPER_MODEL) 
+        print("Whisper model loaded.")
+    return _model 
 
 # now model is used to transcribe the chunks
-def transcribe_chunk_whisper(chunk_path:str , translate:bool = False) -> str: # translate parameter ka use karne ka reason ye hai ki whisper model me ek feature hota hai jise "translate" kehte hain. Jab aap is parameter ko True set karte hain, to model automatically detected language ko English me translate kar deta hai. Iska fayda ye hai ki agar aapke audio me koi aur language hai jo English nahi hai, to bhi aapko English me transcription result milega. Agar aapko original language me transcription chahiye, to aap is parameter ko False rakh sakte hain. By default, maine is parameter ko False set kiya hai, lekin aap apne requirement ke hisab se ise change kar sakte hain.
-    model = load_model()
-    result = model.transcribe(chunk_path, task="transcribe")
-    return result['text']
+def transcribe_chunk_whisper(chunk_path: str) -> str:
+
+    model = load_model()  
+
+    result = model.transcribe(chunk_path, task="transcribe")  
+    return result["text"]  
+
 
 def _send_to_sarvam(piece_path: str) -> str:
     """Send one ≤30s WAV file to Sarvam and return the English transcript."""
@@ -48,11 +54,12 @@ def _send_to_sarvam(piece_path: str) -> str:
         )
 
     if not response.ok:
-        print(f"\n Sarvam returned {response.status_code}")
+        print(f"\n❌ Sarvam returned {response.status_code}")
         print(f"Response body: {response.text}\n")
         response.raise_for_status()
 
     return response.json().get("transcript", "")
+
 
 def transcribe_chunk_sarvam(chunk_path: str) -> str:
     """
@@ -66,7 +73,7 @@ def transcribe_chunk_sarvam(chunk_path: str) -> str:
     piece_ms = SARVAM_PIECE_SECONDS * 1000
 
     full_text = ""
-    total_pieces =  (len(audio) + piece_ms - 1) // piece_ms
+    total_pieces = (len(audio) + piece_ms - 1) // piece_ms
 
     for i, start in enumerate(range(0, len(audio), piece_ms)):
         piece = audio[start: start + piece_ms]
@@ -82,8 +89,8 @@ def transcribe_chunk_sarvam(chunk_path: str) -> str:
 
     return full_text.strip()
 
-
 # for videos we have more than one chunks to transcribe, so we will use this function to transcribe all the chunks and combine the results into one string. Is function me ham ek list of chunk paths pass karenge, aur ye function har chunk ko transcribe karega aur unke results ko ek single string me combine karke return karega. Is tarah se ham apne video ke poore audio ka transcription result ek hi string me le sakte hain, chahe usme kitne bhi chunks ho.
+
 def transcribe_chunk(chunk_path: str, language: str = "english") -> str:
     """
     Route one chunk to Whisper or Sarvam depending on language choice.
@@ -93,6 +100,8 @@ def transcribe_chunk(chunk_path: str, language: str = "english") -> str:
     if language.lower() == "hinglish":
         return transcribe_chunk_sarvam(chunk_path)
     return transcribe_chunk_whisper(chunk_path)
+
+
 def transcribe_all(chunks: list, language: str = "english") -> str:
 
     full_transcript = "" 
@@ -110,4 +119,4 @@ def transcribe_all(chunks: list, language: str = "english") -> str:
 
     print("Transcription complete.")
 
-    return full_transcript.strip()
+    return full_transcript.strip()  

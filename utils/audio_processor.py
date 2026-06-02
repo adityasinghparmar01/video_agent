@@ -1,35 +1,26 @@
 import yt_dlp # for downloading audio from YouTube
-from pydub import AudioSegment # for processing audio files & chunking
+from pydub import AudioSegment# for processing audio files & chunking
 import os
 
-DOWNLOAD_DIR = "downloads"
-os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+DOWNLOAD_DIR = 'downloades'
+os.makedirs(DOWNLOAD_DIR,exist_ok = True)
 
 # from youtube vali videos ko download karne ke liye hum yt_dlp library ka use karenge jo ki ek powerful tool hai YouTube se audio aur video download karne ke liye. Hum is function me YouTube video ka URL pass karenge aur ye function us video se audio ko extract karke WAV format me save karega.
 
 def download_youtube_audio(url :str) ->str:
     output_path = os.path.join(DOWNLOAD_DIR, "%(title)s.%(ext)s")
     ydl_opts = {
-    "format": "bestaudio/best",
-    "outtmpl": output_path,
-    "quiet": True,
-    "noplaylist": True,
-    "nocheckcertificate": True,
-    "geo_bypass": True,
-    "extractor_args": {
-        "youtube": {
-            "player_client": ["android", "web"]
-        }
-    },
-    "http_headers": {
-        "User-Agent": "Mozilla/5.0"
-    },
-    "postprocessors": [{
-        "key": "FFmpegExtractAudio",
-        "preferredcodec": "wav",
-        "preferredquality": "192",
-    }],
-}
+        "format": "bestaudio/best",
+        "outtmpl": output_path,
+        "postprocessors": [
+            {
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "wav",
+                "preferredquality": "192",
+            }
+        ],
+        "quiet": True,
+    }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
         filename = ydl.prepare_filename(info).replace(".webm", ".wav").replace(".m4a", ".wav")
@@ -47,18 +38,19 @@ def convert_to_wav(input_path: str) -> str:
 
 # audio -> into chunks
 
-def chunk_audio(wav_path: str, chunk_minutes: int = 10) -> list:
-    audio = AudioSegment.from_wav(wav_path) # file load ho  gai
-    chunk_ms = chunk_minutes*60*1000 # convert minutes to milliseconds -> b/c it works in ms
+def chunk_audio(wav_path : str , chunk_minutes : int = 10) -> list:
+    audio = AudioSegment.from_wav(wav_path)
+    chunk_ms = chunk_minutes * 60 * 1000 
 
     chunks = []
 
-    for i , start in enumerate(range(0, len(audio), chunk_ms)):
-        chunk = audio[start:start+chunk_ms]
+    for i, start in enumerate(range(0,len(audio),chunk_ms)):
+        chunk = audio[start : start + chunk_ms]
         chunk_path = f"{wav_path}_chunk_{i}.wav"
-        chunk.export(chunk_path, format="wav")
+        chunk.export(chunk_path , format = "wav")
 
         chunks.append(chunk_path)
+    
     return chunks
 
 def process_input(source: str) -> list:

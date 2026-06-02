@@ -2,5 +2,5 @@
 __pycache__/
 .env
 vector_db/
-downloads/
+downloades/
 *.pyc
