@@ -42,3 +42,7 @@ python-dotenv>=1.0.0              # Load API keys from .env
 numpy>=1.26.0
 tqdm>=4.66.0                      # Progress bars
 requests>=2.32.0
+
+langchain-chroma==0.1.4
+chromadb==0.5.23
+protobuf==3.20.3
