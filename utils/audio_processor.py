@@ -6,16 +6,21 @@ def download_youtube_audio(url):
     os.makedirs("downloads", exist_ok=True)
 
     ydl_opts = {
-        "format": "bestaudio/best",
-        "outtmpl": "downloads/%(id)s.%(ext)s",
-        "restrictfilenames": True,
-        "noplaylist": True,
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android", "web"]
-            }
-        },
+    "format": "bestaudio[ext=m4a]/bestaudio/best",
+    "outtmpl": "downloads/%(id)s.%(ext)s",
+    "restrictfilenames": True,
+    "noplaylist": True,
+    "quiet": False,
+    "no_warnings": False,
+    "extractor_args": {
+        "youtube": {
+            "player_client": ["android"]
+        }
+    },
+    "http_headers": {
+        "User-Agent": "Mozilla/5.0"
     }
+}
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
