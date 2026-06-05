@@ -10,17 +10,18 @@ def download_youtube_audio(url):
         "outtmpl": "downloads/%(id)s.%(ext)s",
         "restrictfilenames": True,
         "noplaylist": True,
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "web"]
+            }
+        },
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
         file_path = ydl.prepare_filename(info)
 
-        if not os.path.exists(file_path):
-          downloaded_files = os.listdir("downloads")
-        if downloaded_files:
-               file_path = os.path.join("downloads", downloaded_files[0])
-
+    return file_path
 # ham covert karenge mp3/mp4/youtube etc audio files to wav format & good monostable 16khz audio for processing and chunking for using in whisper model for transcription. Hum is function me kisi bhi audio/video file ko WAV format me convert karenge jise hum apne transcription process me use kar sakte hain. Is function me hum pydub library ka use karenge jo ki audio processing ke liye bahut hi useful hai. Hum audio ko mono channel aur 16kHz sample rate me convert karenge jo ki whisper model ke liye ideal hai.
 
 def convert_to_wav(input_path: str) -> str:
